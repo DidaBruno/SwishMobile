@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
     id("com.google.dagger.hilt.android")
-    id("org.jetbrains.kotlin.kapt") version "2.3.0"
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -64,26 +64,26 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     // Navigation
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-compose:2.8.0")
 
     // Lifecycle + ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.14.0"))
-    implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
-    implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.11.1")
 
     // Dependency Injection (Hilt)
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
+    implementation("com.google.dagger:hilt-android:2.56.2")
+    ksp("com.google.dagger:hilt-android-compiler:2.56.2")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // WorkManager (for notifications)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.hilt:hilt-work:1.2.0")
-    kapt("androidx.hilt:hilt-compiler:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
