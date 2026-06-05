@@ -2,10 +2,24 @@ package hr.ferit.brunodidovic.swish.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Backgrounds
+val Bg = Color(0xFF090D14)
+val Surface = Color(0xFF0F1620)
+val Surface2 = Color(0xFF162030)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Brand
+val Orange = Color(0xFFE8621A)
+val OrangeHover = Color(0xFFF07A38)
+val Blue = Color(0xFF4A9AFF)
+
+// Borders
+val Border = Color(0xFF1E2D40)
+
+// Text
+val TextPrimary = Color(0xFFF0F2F5)
+val TextMuted = Color(0xFF8A9BB0)
+val TextDim = Color(0xFF4A5A6E)
+
+// Semantic
+val Error = Color(0xFFE24B4A)
+val Success = Color(0xFF1D9E75)
