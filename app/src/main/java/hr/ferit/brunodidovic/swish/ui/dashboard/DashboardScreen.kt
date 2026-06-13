@@ -1,0 +1,285 @@
+package hr.ferit.brunodidovic.swish.ui.dashboard
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hr.ferit.brunodidovic.swish.model.Workout
+import hr.ferit.brunodidovic.swish.ui.theme.*
+import hr.ferit.brunodidovic.swish.viewmodel.DashboardUiState
+import hr.ferit.brunodidovic.swish.viewmodel.DashboardViewModel
+
+@Composable
+fun DashboardScreen(
+    onCreateWorkout: () -> Unit,
+    viewModel: DashboardViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Bg)
+    ) {
+        when (val state = uiState) {
+            is DashboardUiState.Loading -> {
+                CircularProgressIndicator(
+                    color = Orange,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            is DashboardUiState.Error -> {
+                Text(
+                    text = state.message,
+                    color = Error,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            is DashboardUiState.Success -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text(
+                        text = "Dashboard",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    StreakCard(streak = state.streak)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (state.todayWorkout != null) {
+                        WorkoutSummaryCard(
+                            title = "Today's Workout",
+                            workout = state.todayWorkout
+                        )
+                    } else {
+                        NoWorkoutCard(onCreateWorkout = onCreateWorkout)
+
+                        if (state.lastWorkout != null) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            WorkoutSummaryCard(
+                                title = "Last Workout",
+                                workout = state.lastWorkout
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StreakCard(streak: Int) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Surface)
+            .border(1.dp, Border, RoundedCornerShape(12.dp))
+            .padding(20.dp)
+    ) {
+        Text(
+            text = "Current Streak",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextMuted
+        )
+        Text(
+            text = "$streak ${if (streak == 1) "day" else "days"}",
+            style = MaterialTheme.typography.titleLarge,
+            color = Orange
+        )
+    }
+}
+
+@Composable
+private fun NoWorkoutCard(onCreateWorkout: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Surface)
+            .border(1.dp, Border, RoundedCornerShape(12.dp))
+            .padding(20.dp)
+    ) {
+        Text(
+            text = "No workout today yet",
+            style = MaterialTheme.typography.titleMedium,
+            color = TextPrimary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Time to get back on the court.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextMuted
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = onCreateWorkout,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Orange),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("Create Today's Workout", color = TextPrimary)
+        }
+    }
+}
+
+@Composable
+private fun WorkoutSummaryCard(title: String, workout: Workout) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Surface)
+            .border(1.dp, Border, RoundedCornerShape(12.dp))
+            .padding(20.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = TextPrimary
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = formatDate(workout.date),
+            style = MaterialTheme.typography.bodySmall,
+            color = TextMuted
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Shooting",
+            style = MaterialTheme.typography.titleSmall,
+            color = Orange
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            ShootingStat("Twos", workout.drills.shooting.twos, Modifier.weight(1f))
+            ShootingStat("Threes", workout.drills.shooting.threes, Modifier.weight(1f))
+            ShootingStat("FT", workout.drills.shooting.freeThrows, Modifier.weight(1f))
+            ShootingStat("Layups", workout.drills.shooting.layups, Modifier.weight(1f))
+            ShootingStat("Dunks", workout.drills.shooting.dunks, Modifier.weight(1f))
+        }
+
+        if (workout.drills.handling.isNotEmpty()) {
+            SectionDivider()
+            Text(
+                text = "Handling",
+                style = MaterialTheme.typography.titleSmall,
+                color = Orange
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            workout.drills.handling.forEach { drill ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = drill.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextMuted
+                    )
+                    Text(
+                        text = "${drill.count} ${drill.unit}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary
+                    )
+                }
+            }
+        }
+
+        if (workout.games.isNotEmpty()) {
+            SectionDivider()
+            Text(
+                text = "Games",
+                style = MaterialTheme.typography.titleSmall,
+                color = Orange
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            workout.games.forEach { game ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${game.teamA.players} vs ${game.teamB.players}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextMuted
+                    )
+                    Text(
+                        text = "${game.teamA.score} - ${game.teamB.score}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShootingStat(label: String, value: Int, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = TextMuted,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "$value",
+            style = MaterialTheme.typography.titleMedium,
+            color = TextPrimary
+        )
+    }
+}
+
+@Composable
+private fun SectionDivider() {
+    Spacer(modifier = Modifier.height(20.dp))
+    HorizontalDivider(color = Border, thickness = 1.dp)
+    Spacer(modifier = Modifier.height(20.dp))
+}
+
+private fun formatDate(dateString: String): String {
+    return try {
+        val date = java.time.LocalDate.parse(dateString)
+        val formatter = java.time.format.DateTimeFormatter
+            .ofPattern("MMMM d, yyyy", java.util.Locale.ENGLISH)
+        date.format(formatter)
+    } catch (e: Exception) {
+        dateString
+    }
+}

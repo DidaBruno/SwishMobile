@@ -1,5 +1,6 @@
 package hr.ferit.brunodidovic.swish.ui.navigation
 
+import hr.ferit.brunodidovic.swish.ui.dashboard.DashboardScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -56,37 +57,11 @@ fun NavGraph(startDestination: String) {
             )
         }
         composable(Routes.DASHBOARD) {
-            val viewModel: AuthViewModel = hiltViewModel()
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Bg),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Dashboard coming soon",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = {
-                            viewModel.logout()
-                            navController.navigate(Routes.LOGIN) {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Orange),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Logout", color = TextPrimary)
-                    }
+            DashboardScreen(
+                onCreateWorkout = {
+                    // placeholder — we'll wire this to the create workout screen later
                 }
-            }
+            )
         }
     }
 }
