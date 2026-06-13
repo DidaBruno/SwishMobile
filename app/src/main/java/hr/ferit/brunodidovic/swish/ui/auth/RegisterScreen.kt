@@ -1,5 +1,6 @@
 package hr.ferit.brunodidovic.swish.ui.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import hr.ferit.brunodidovic.swish.R
 import hr.ferit.brunodidovic.swish.ui.theme.*
 import hr.ferit.brunodidovic.swish.viewmodel.AuthUiState
 import hr.ferit.brunodidovic.swish.viewmodel.AuthViewModel
@@ -45,6 +48,14 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_swish_logo),
+            contentDescription = "Swish logo",
+            modifier = Modifier.size(80.dp)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Text(
             text = buildAnnotatedString {
                 withStyle(SpanStyle(color = TextPrimary)) { append("SW") }
@@ -63,7 +74,7 @@ fun RegisterScreen(
             color = TextMuted
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
             value = username,
