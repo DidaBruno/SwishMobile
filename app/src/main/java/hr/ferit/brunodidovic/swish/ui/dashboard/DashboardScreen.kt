@@ -56,15 +56,10 @@ fun DashboardScreen(
                         .padding(24.dp)
                 ) {
                     Spacer(modifier = Modifier.height(32.dp))
-                    Text(
-                        text = "Dashboard",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
+                    GreetingHeader(
+                        username = state.username,
+                        streak = state.streak
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    StreakCard(streak = state.streak)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -91,25 +86,46 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun StreakCard(streak: Int) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Surface)
-            .border(1.dp, Border, RoundedCornerShape(12.dp))
-            .padding(20.dp)
-    ) {
+private fun GreetingHeader(username: String, streak: Int) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Current Streak",
-            style = MaterialTheme.typography.bodySmall,
-            color = TextMuted
-        )
-        Text(
-            text = "$streak ${if (streak == 1) "day" else "days"}",
+            text = "${greeting()}, $username",
             style = MaterialTheme.typography.titleLarge,
-            color = Orange
+            color = TextPrimary
         )
+
+        if (streak > 0) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(Surface)
+                    .border(1.dp, Border, RoundedCornerShape(50))
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$streak",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = Orange
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "${if (streak == 1) "workout" else "workouts"} in a row",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextMuted
+                )
+            }
+        }
+    }
+}
+
+private fun greeting(): String {
+    val hour = java.time.LocalTime.now().hour
+    return when (hour) {
+        in 5..11 -> "Good morning"
+        in 12..17 -> "Good afternoon"
+        else -> "Good evening"
     }
 }
 
@@ -168,12 +184,11 @@ private fun WorkoutSummaryCard(title: String, workout: Workout) {
             color = TextMuted
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
+        SectionDivider()
         Text(
             text = "Shooting",
             style = MaterialTheme.typography.titleSmall,
-            color = Orange
+            color = TextPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -190,7 +205,7 @@ private fun WorkoutSummaryCard(title: String, workout: Workout) {
             Text(
                 text = "Handling",
                 style = MaterialTheme.typography.titleSmall,
-                color = Orange
+                color = TextPrimary
             )
             Spacer(modifier = Modifier.height(8.dp))
             workout.drills.handling.forEach { drill ->
@@ -219,10 +234,12 @@ private fun WorkoutSummaryCard(title: String, workout: Workout) {
             Text(
                 text = "Games",
                 style = MaterialTheme.typography.titleSmall,
-                color = Orange
+                color = TextPrimary
             )
             Spacer(modifier = Modifier.height(8.dp))
             workout.games.forEach { game ->
+                val teamAWins = game.teamA.score > game.teamB.score
+                val teamBWins = game.teamB.score > game.teamA.score
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -234,11 +251,23 @@ private fun WorkoutSummaryCard(title: String, workout: Workout) {
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextMuted
                     )
-                    Text(
-                        text = "${game.teamA.score} - ${game.teamB.score}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
-                    )
+                    Row {
+                        Text(
+                            text = "${game.teamA.score}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (teamAWins) Orange else TextPrimary
+                        )
+                        Text(
+                            text = " - ",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "${game.teamB.score}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (teamBWins) Orange else TextPrimary
+                        )
+                    }
                 }
             }
         }
@@ -260,8 +289,8 @@ private fun ShootingStat(label: String, value: Int, modifier: Modifier = Modifie
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "$value",
-            style = MaterialTheme.typography.titleMedium,
-            color = TextPrimary
+            style = MaterialTheme.typography.titleLarge,
+            color = Orange
         )
     }
 }

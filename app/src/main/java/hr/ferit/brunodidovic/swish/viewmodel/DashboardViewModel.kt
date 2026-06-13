@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import hr.ferit.brunodidovic.swish.model.Workout
 import hr.ferit.brunodidovic.swish.repository.AuthRepository
+import hr.ferit.brunodidovic.swish.repository.UserRepository
 import hr.ferit.brunodidovic.swish.repository.WorkoutRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -16,6 +18,7 @@ import javax.inject.Inject
 sealed class DashboardUiState {
     object Loading : DashboardUiState()
     data class Success(
+        val username: String,
         val todayWorkout: Workout?,
         val lastWorkout: Workout?,
         val streak: Int
@@ -26,7 +29,8 @@ sealed class DashboardUiState {
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<DashboardUiState>(DashboardUiState.Loading)
@@ -41,23 +45,26 @@ class DashboardViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                workoutRepository.getWorkoutsForUser(userId).collect { workouts ->
+                combine(
+                    workoutRepository.getWorkoutsForUser(userId),
+                    userRepository.getUserById(userId)
+                ) { workouts, user ->
                     val today = LocalDate.now().toString()
-
                     val todayWorkout = workouts.find { it.date == today }
-                    // workouts are already sorted by date descending, so the most recent
-                    // one that isn't today is the first that doesn't match today's date
                     val lastWorkout = workouts.firstOrNull { it.date != today }
                     val streak = calculateStreak(workouts)
 
-                    _uiState.value = DashboardUiState.Success(
+                    DashboardUiState.Success(
+                        username = user?.username ?: "Player",
                         todayWorkout = todayWorkout,
                         lastWorkout = lastWorkout,
                         streak = streak
                     )
+                }.collect { state ->
+                    _uiState.value = state
                 }
             } catch (e: Exception) {
-                _uiState.value = DashboardUiState.Error(e.message ?: "Failed to load workouts")
+                _uiState.value = DashboardUiState.Error(e.message ?: "Failed to load")
             }
         }
     }
