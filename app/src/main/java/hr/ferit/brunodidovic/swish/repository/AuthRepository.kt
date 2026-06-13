@@ -27,12 +27,13 @@ class AuthRepository @Inject constructor() {
 
     suspend fun register(email: String, password: String, username: String): Result<FirebaseUser> {
         return try {
-            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            val cleanEmail = email.trim().lowercase()
+            val result = auth.createUserWithEmailAndPassword(cleanEmail, password).await()
             val user = result.user!!
             val newUser = User(
                 id = user.uid,
-                username = username,
-                email = email,
+                username = username.trim(),
+                email = cleanEmail,
                 createdAt = System.currentTimeMillis()
             )
             firestore.collection("users").document(user.uid).set(newUser).await()
