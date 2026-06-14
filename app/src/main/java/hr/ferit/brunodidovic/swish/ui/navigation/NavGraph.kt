@@ -57,9 +57,11 @@ fun NavGraph(startDestination: String) {
             )
         }
         composable(Routes.DASHBOARD) {
-            DashboardScreen(
-                onCreateWorkout = {
-                    // placeholder — we'll wire this to the create workout screen later
+            MainScreen(
+                onLoggedOut = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
