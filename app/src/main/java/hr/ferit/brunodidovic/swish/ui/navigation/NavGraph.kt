@@ -21,7 +21,7 @@ import hr.ferit.brunodidovic.swish.viewmodel.AuthViewModel
 object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
-    const val DASHBOARD = "dashboard"
+    const val MAIN = "main"
 }
 
 @Composable
@@ -35,7 +35,7 @@ fun NavGraph(startDestination: String) {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Routes.DASHBOARD) {
+                    navController.navigate(Routes.MAIN) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
@@ -47,7 +47,7 @@ fun NavGraph(startDestination: String) {
         composable(Routes.REGISTER) {
             RegisterScreen(
                 onRegisterSuccess = {
-                    navController.navigate(Routes.DASHBOARD) {
+                    navController.navigate(Routes.MAIN) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
@@ -56,7 +56,7 @@ fun NavGraph(startDestination: String) {
                 }
             )
         }
-        composable(Routes.DASHBOARD) {
+        composable(Routes.MAIN) {
             MainScreen(
                 onLoggedOut = {
                     navController.navigate(Routes.LOGIN) {

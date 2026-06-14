@@ -91,7 +91,11 @@ fun MainScreen(
                 )
             }
             composable(BottomNavItem.Workouts.route) {
-                WorkoutsScreen()
+                WorkoutsScreen(
+                    onWorkoutClick = { workoutId ->
+                        // placeholder until Phase 7 - workout detail screen
+                    }
+                )
             }
             composable(BottomNavItem.Profile.route) {
                 ProfileScreen()

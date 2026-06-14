@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val startDestination = if (authRepository.currentUser != null) {
-                        Routes.DASHBOARD
+                        Routes.MAIN
                     } else {
                         Routes.LOGIN
                     }
