@@ -13,14 +13,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import hr.ferit.brunodidovic.swish.ui.dashboard.DashboardScreen
 import hr.ferit.brunodidovic.swish.ui.profile.ProfileScreen
 import hr.ferit.brunodidovic.swish.ui.theme.*
+import hr.ferit.brunodidovic.swish.ui.workouts.WorkoutDetailScreen
 import hr.ferit.brunodidovic.swish.ui.workouts.WorkoutsScreen
+
+private const val WORKOUT_DETAIL_ROUTE = "workout_detail"
 
 @Composable
 fun MainScreen(
@@ -93,8 +98,18 @@ fun MainScreen(
             composable(BottomNavItem.Workouts.route) {
                 WorkoutsScreen(
                     onWorkoutClick = { workoutId ->
-                        // placeholder until Phase 7 - workout detail screen
+                        navController.navigate("$WORKOUT_DETAIL_ROUTE/$workoutId")
                     }
+                )
+            }
+            composable(
+                route = "$WORKOUT_DETAIL_ROUTE/{workoutId}",
+                arguments = listOf(navArgument("workoutId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val workoutId = backStackEntry.arguments?.getString("workoutId") ?: ""
+                WorkoutDetailScreen(
+                    workoutId = workoutId,
+                    onBack = { navController.popBackStack() }
                 )
             }
             composable(BottomNavItem.Profile.route) {
