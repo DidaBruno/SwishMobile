@@ -114,11 +114,25 @@ fun MainScreen(
                 val workoutId = backStackEntry.arguments?.getString("workoutId") ?: ""
                 WorkoutDetailScreen(
                     workoutId = workoutId,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onEdit = { id ->
+                        navController.navigate("$CREATE_WORKOUT_ROUTE?workoutId=$id")
+                    }
                 )
             }
-            composable(CREATE_WORKOUT_ROUTE) {
+            composable(
+                route = "$CREATE_WORKOUT_ROUTE?workoutId={workoutId}",
+                arguments = listOf(
+                    navArgument("workoutId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
+                val workoutId = backStackEntry.arguments?.getString("workoutId")
                 CreateWorkoutScreen(
+                    workoutId = workoutId,
                     onBack = { navController.popBackStack() },
                     onSaved = { navController.popBackStack() }
                 )

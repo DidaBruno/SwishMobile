@@ -26,6 +26,7 @@ import hr.ferit.brunodidovic.swish.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateWorkoutScreen(
+    workoutId: String? = null,
     onBack: () -> Unit,
     onSaved: () -> Unit,
     viewModel: CreateWorkoutViewModel = hiltViewModel()
@@ -37,13 +38,23 @@ fun CreateWorkoutScreen(
     LaunchedEffect(saveState) {
         if (saveState is SaveState.Saved) onSaved()
     }
+    LaunchedEffect(workoutId) {
+        if (workoutId != null) {
+            viewModel.loadWorkoutForEditing(workoutId)
+        }
+    }
 
     Scaffold(
         containerColor = Bg,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                title = { Text("New Workout", color = TextPrimary) },
+                title = {
+                    Text(
+                        if (workoutId != null) "Edit Workout" else "New Workout",
+                        color = TextPrimary
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

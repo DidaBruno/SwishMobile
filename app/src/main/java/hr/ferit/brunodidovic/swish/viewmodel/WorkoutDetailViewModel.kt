@@ -25,6 +25,9 @@ class WorkoutDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<WorkoutDetailUiState>(WorkoutDetailUiState.Loading)
     val uiState: StateFlow<WorkoutDetailUiState> = _uiState.asStateFlow()
 
+    private val _deleted = MutableStateFlow(false)
+    val deleted: StateFlow<Boolean> = _deleted.asStateFlow()
+
     fun loadWorkout(workoutId: String) {
         viewModelScope.launch {
             try {
@@ -37,6 +40,18 @@ class WorkoutDetailViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.value = WorkoutDetailUiState.Error(e.message ?: "Failed to load workout")
+            }
+        }
+    }
+    fun deleteWorkout(workoutId: String) {
+        viewModelScope.launch {
+            val result = workoutRepository.deleteWorkout(workoutId)
+            if (result.isSuccess) {
+                _deleted.value = true
+            } else {
+                _uiState.value = WorkoutDetailUiState.Error(
+                    result.exceptionOrNull()?.message ?: "Failed to delete"
+                )
             }
         }
     }

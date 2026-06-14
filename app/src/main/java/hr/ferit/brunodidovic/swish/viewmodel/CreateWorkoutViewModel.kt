@@ -63,6 +63,8 @@ class CreateWorkoutViewModel @Inject constructor(
     private val _templates = MutableStateFlow<List<DrillTemplate>>(emptyList())
     val templates: StateFlow<List<DrillTemplate>> = _templates.asStateFlow()
 
+    private var editingWorkoutId: String? = null
+
     init {
         loadTemplates()
     }
@@ -72,6 +74,40 @@ class CreateWorkoutViewModel @Inject constructor(
         viewModelScope.launch {
             templateRepository.getTemplatesForUser(userId).collect {
                 _templates.value = it
+            }
+        }
+    }
+
+    fun loadWorkoutForEditing(workoutId: String) {
+        editingWorkoutId = workoutId
+        viewModelScope.launch {
+            workoutRepository.getWorkoutById(workoutId).collect { workout ->
+                if (workout != null) {
+                    _form.value = CreateWorkoutForm(
+                        date = workout.date,
+                        twos = workout.drills.shooting.twos.toStringOrEmpty(),
+                        threes = workout.drills.shooting.threes.toStringOrEmpty(),
+                        freeThrows = workout.drills.shooting.freeThrows.toStringOrEmpty(),
+                        layups = workout.drills.shooting.layups.toStringOrEmpty(),
+                        dunks = workout.drills.shooting.dunks.toStringOrEmpty(),
+                        handling = workout.drills.handling.map {
+                            HandlingDrillInput(
+                                name = it.name,
+                                count = it.count.toString(),
+                                unit = it.unit
+                            )
+                        },
+                        games = workout.games.map {
+                            GameInput(
+                                playersPerTeam = it.playersPerTeam.toString(),
+                                teamAPlayers = it.teamA.players,
+                                teamAScore = it.teamA.score.toString(),
+                                teamBPlayers = it.teamB.players,
+                                teamBScore = it.teamB.score.toString()
+                            )
+                        }
+                    )
+                }
             }
         }
     }
@@ -175,6 +211,7 @@ class CreateWorkoutViewModel @Inject constructor(
             _saveState.value = SaveState.Saving
 
             val workout = Workout(
+                id = editingWorkoutId ?: "",
                 userId = userId,
                 date = f.date,
                 createdAt = java.time.Instant.now().toString(),
@@ -223,3 +260,6 @@ class CreateWorkoutViewModel @Inject constructor(
 
 // helper: keep only digits so number fields can't get letters
 private fun String.filterDigits(): String = this.filter { it.isDigit() }
+
+// helper: make it a string or empty
+private fun Int.toStringOrEmpty(): String = if (this == 0) "" else this.toString()

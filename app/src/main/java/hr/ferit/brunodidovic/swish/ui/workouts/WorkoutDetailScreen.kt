@@ -8,6 +8,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +34,7 @@ import java.util.Locale
 fun WorkoutDetailScreen(
     workoutId: String,
     onBack: () -> Unit,
+    onEdit: (String) -> Unit,
     viewModel: WorkoutDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -37,6 +42,13 @@ fun WorkoutDetailScreen(
     // load the workout once when the screen first appears
     LaunchedEffect(workoutId) {
         viewModel.loadWorkout(workoutId)
+    }
+
+    val deleted by viewModel.deleted.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(deleted) {
+        if (deleted) onBack()
     }
 
     Scaffold(
@@ -55,9 +67,23 @@ fun WorkoutDetailScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Bg
-                )
+                actions = {
+                    IconButton(onClick = { onEdit(workoutId) }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Edit,
+                            contentDescription = "Edit",
+                            tint = Blue
+                        )
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = "Delete",
+                            tint = Error
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)
             )
         }
     ) { innerPadding ->
@@ -87,6 +113,33 @@ fun WorkoutDetailScreen(
                 }
             }
         }
+    }
+    // delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete workout?", color = TextPrimary) },
+            text = {
+                Text(
+                    "This workout will be permanently deleted. This can't be undone.",
+                    color = TextMuted
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    viewModel.deleteWorkout(workoutId)
+                }) {
+                    Text("Delete", color = Error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel", color = TextMuted)
+                }
+            },
+            containerColor = Surface2
+        )
     }
 }
 
