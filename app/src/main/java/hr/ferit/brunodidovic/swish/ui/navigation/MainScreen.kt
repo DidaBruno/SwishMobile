@@ -138,7 +138,9 @@ fun MainScreen(
                 )
             }
             composable(BottomNavItem.Profile.route) {
-                ProfileScreen()
+                ProfileScreen(
+                    onLoggedOut = onLoggedOut
+                )
             }
         }
     }

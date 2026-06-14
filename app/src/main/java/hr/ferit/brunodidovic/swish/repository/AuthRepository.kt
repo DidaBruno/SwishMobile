@@ -7,6 +7,7 @@ import hr.ferit.brunodidovic.swish.model.User
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.google.firebase.Timestamp
 
 @Singleton
 class AuthRepository @Inject constructor() {
@@ -34,7 +35,7 @@ class AuthRepository @Inject constructor() {
                 id = user.uid,
                 username = username.trim(),
                 email = cleanEmail,
-                createdAt = System.currentTimeMillis()
+                createdAt = Timestamp.now()
             )
             firestore.collection("users").document(user.uid).set(newUser).await()
             Result.success(user)
