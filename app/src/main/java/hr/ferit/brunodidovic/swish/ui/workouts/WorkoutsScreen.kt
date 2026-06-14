@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,83 +27,103 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutsScreen(
     onWorkoutClick: (String) -> Unit,
+    onCreateWorkout: () -> Unit,
     viewModel: WorkoutsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedYear by viewModel.selectedYear.collectAsStateWithLifecycle()
     val selectedMonth by viewModel.selectedMonth.collectAsStateWithLifecycle()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Bg)
-            .padding(24.dp)
-    ) {
-        Text(
-            text = "Workouts",
-            style = MaterialTheme.typography.titleLarge,
-            color = TextPrimary
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        when (val state = uiState) {
-            is WorkoutsUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Orange)
-                }
+    Scaffold(
+        containerColor = Bg,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onCreateWorkout,
+                containerColor = Orange
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Create workout",
+                    tint = TextPrimary
+                )
             }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Bg)
+                .padding(innerPadding)
+                .padding(24.dp)
+        ) {
+            Text(
+                text = "Workouts",
+                style = MaterialTheme.typography.titleLarge,
+                color = TextPrimary
+            )
 
-            is WorkoutsUiState.Error -> {
-                Text(text = state.message, color = Error)
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            is WorkoutsUiState.Success -> {
-                val years = viewModel.availableYears()
-                val monthsForYear = viewModel.availableMonthsForYear(selectedYear)
-
-                if (years.isNotEmpty()) {
-                    YearFilterRow(
-                        years = years,
-                        selectedYear = selectedYear,
-                        onYearSelected = { viewModel.selectYear(it) }
-                    )
-
-                    if (selectedYear != null && monthsForYear.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        MonthFilterRow(
-                            months = monthsForYear,
-                            selectedMonth = selectedMonth,
-                            onMonthSelected = { viewModel.selectMonth(it) }
-                        )
+            when (val state = uiState) {
+                is WorkoutsUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Orange)
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                if (state.workouts.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No workouts found",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextMuted
+                is WorkoutsUiState.Error -> {
+                    Text(text = state.message, color = Error)
+                }
+
+                is WorkoutsUiState.Success -> {
+                    val years = viewModel.availableYears()
+                    val monthsForYear = viewModel.availableMonthsForYear(selectedYear)
+
+                    if (years.isNotEmpty()) {
+                        YearFilterRow(
+                            years = years,
+                            selectedYear = selectedYear,
+                            onYearSelected = { viewModel.selectYear(it) }
                         )
-                    }
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(state.workouts) { workout ->
-                            WorkoutListCard(
-                                workout = workout,
-                                onClick = { onWorkoutClick(workout.id) }
+
+                        if (selectedYear != null && monthsForYear.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            MonthFilterRow(
+                                months = monthsForYear,
+                                selectedMonth = selectedMonth,
+                                onMonthSelected = { viewModel.selectMonth(it) }
                             )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    if (state.workouts.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No workouts found",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextMuted
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(state.workouts) { workout ->
+                                WorkoutListCard(
+                                    workout = workout,
+                                    onClick = { onWorkoutClick(workout.id) }
+                                )
+                            }
                         }
                     }
                 }
@@ -143,14 +165,14 @@ private fun MonthFilterRow(
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             FilterChip(
-                label = "All",
+                label = "All months",
                 selected = selectedMonth == null,
                 onClick = { onMonthSelected(null) }
             )
         }
         items(months) { month ->
             FilterChip(
-                label = formatMonth(month),
+                label = formatMonthShort(month),
                 selected = selectedMonth == month,
                 onClick = { onMonthSelected(month) }
             )
@@ -234,10 +256,10 @@ private fun formatDate(dateString: String): String {
     }
 }
 
-private fun formatMonth(monthString: String): String {
+private fun formatMonthShort(monthString: String): String {
     return try {
         val ym = YearMonth.parse(monthString)
-        ym.format(DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH))
+        ym.format(DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH))
     } catch (e: Exception) {
         monthString
     }

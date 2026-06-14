@@ -24,8 +24,10 @@ import hr.ferit.brunodidovic.swish.ui.profile.ProfileScreen
 import hr.ferit.brunodidovic.swish.ui.theme.*
 import hr.ferit.brunodidovic.swish.ui.workouts.WorkoutDetailScreen
 import hr.ferit.brunodidovic.swish.ui.workouts.WorkoutsScreen
+import hr.ferit.brunodidovic.swish.ui.workouts.CreateWorkoutScreen
 
 private const val WORKOUT_DETAIL_ROUTE = "workout_detail"
+private const val CREATE_WORKOUT_ROUTE = "create_workout"
 
 @Composable
 fun MainScreen(
@@ -91,7 +93,7 @@ fun MainScreen(
             composable(BottomNavItem.Dashboard.route) {
                 DashboardScreen(
                     onCreateWorkout = {
-                        // placeholder until Phase 8
+                        navController.navigate(CREATE_WORKOUT_ROUTE)
                     }
                 )
             }
@@ -99,6 +101,9 @@ fun MainScreen(
                 WorkoutsScreen(
                     onWorkoutClick = { workoutId ->
                         navController.navigate("$WORKOUT_DETAIL_ROUTE/$workoutId")
+                    },
+                    onCreateWorkout = {
+                        navController.navigate(CREATE_WORKOUT_ROUTE)
                     }
                 )
             }
@@ -110,6 +115,12 @@ fun MainScreen(
                 WorkoutDetailScreen(
                     workoutId = workoutId,
                     onBack = { navController.popBackStack() }
+                )
+            }
+            composable(CREATE_WORKOUT_ROUTE) {
+                CreateWorkoutScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() }
                 )
             }
             composable(BottomNavItem.Profile.route) {

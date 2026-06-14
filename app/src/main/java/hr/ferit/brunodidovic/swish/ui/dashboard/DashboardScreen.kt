@@ -1,5 +1,6 @@
 package hr.ferit.brunodidovic.swish.ui.dashboard
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -151,13 +152,17 @@ private fun NoWorkoutCard(onCreateWorkout: () -> Unit) {
             color = TextMuted
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
+        OutlinedButton(
             onClick = onCreateWorkout,
             modifier = Modifier.fillMaxWidth().height(52.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Orange),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Surface2,
+                contentColor = Blue
+            ),
+            border = BorderStroke(1.dp, Blue),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("Create Today's Workout", color = TextPrimary)
+            Text("Create Today's Workout", color = Blue)
         }
     }
 }

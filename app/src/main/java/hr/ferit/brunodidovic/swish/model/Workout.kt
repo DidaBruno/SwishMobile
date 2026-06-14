@@ -1,5 +1,7 @@
 package hr.ferit.brunodidovic.swish.model
 
+import com.google.firebase.firestore.Exclude
+
 data class ShootingDrills(
     val twos: Int = 0,
     val threes: Int = 0,
@@ -31,7 +33,7 @@ data class Drills(
 )
 
 data class Workout(
-    val id: String = "",
+    @get:Exclude val id: String = "",
     val userId: String = "",
     val date: String = "",
     val createdAt: String = "",
