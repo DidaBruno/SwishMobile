@@ -20,6 +20,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import com.google.firebase.Timestamp
+import java.util.Locale
 
 // --- lifetime totals computed from all workouts ---
 data class ProfileStats(
@@ -192,6 +193,6 @@ class ProfileViewModel @Inject constructor(
         val date = Instant.ofEpochMilli(createdAt.toDate().time)
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
-        return date.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
+        return date.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH))
     }
 }
