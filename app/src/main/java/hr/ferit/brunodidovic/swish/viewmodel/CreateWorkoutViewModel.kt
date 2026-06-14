@@ -64,6 +64,7 @@ class CreateWorkoutViewModel @Inject constructor(
     val templates: StateFlow<List<DrillTemplate>> = _templates.asStateFlow()
 
     private var editingWorkoutId: String? = null
+    private var editingCreatedAt: String? = null
 
     init {
         loadTemplates()
@@ -83,6 +84,7 @@ class CreateWorkoutViewModel @Inject constructor(
         viewModelScope.launch {
             workoutRepository.getWorkoutById(workoutId).collect { workout ->
                 if (workout != null) {
+                    editingCreatedAt = workout.createdAt
                     _form.value = CreateWorkoutForm(
                         date = workout.date,
                         twos = workout.drills.shooting.twos.toStringOrEmpty(),
@@ -111,6 +113,7 @@ class CreateWorkoutViewModel @Inject constructor(
             }
         }
     }
+    fun updateDate(date: String) { _form.value = _form.value.copy(date = date) }
 
     // --- shooting field updates ---
     fun updateTwos(v: String) { _form.value = _form.value.copy(twos = v.filterDigits()) }
@@ -214,7 +217,7 @@ class CreateWorkoutViewModel @Inject constructor(
                 id = editingWorkoutId ?: "",
                 userId = userId,
                 date = f.date,
-                createdAt = java.time.Instant.now().toString(),
+                createdAt = editingCreatedAt ?: java.time.Instant.now().toString(),
                 drills = Drills(
                     shooting = ShootingDrills(
                         twos = f.twos.toIntOrNull() ?: 0,

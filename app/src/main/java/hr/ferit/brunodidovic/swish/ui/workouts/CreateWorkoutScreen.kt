@@ -21,7 +21,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import hr.ferit.brunodidovic.swish.viewmodel.*
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.DateRange
 import hr.ferit.brunodidovic.swish.ui.theme.*
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +38,7 @@ fun CreateWorkoutScreen(
     val form by viewModel.form.collectAsStateWithLifecycle()
     val saveState by viewModel.saveState.collectAsStateWithLifecycle()
     val templates by viewModel.templates.collectAsStateWithLifecycle()
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveState) {
         if (saveState is SaveState.Saved) onSaved()
@@ -75,6 +80,58 @@ fun CreateWorkoutScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
+            // --- Date ---
+            SectionTitle("Date")
+            Spacer(Modifier.height(12.dp))
+            DateField(date = form.date, onClick = { showDatePicker = true })
+
+            if (showDatePicker) {
+                val initialMillis = remember(form.date) {
+                    runCatching {
+                        LocalDate.parse(form.date)
+                            .atStartOfDay(ZoneOffset.UTC)
+                            .toInstant()
+                            .toEpochMilli()
+                    }.getOrNull()
+                }
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDateMillis = initialMillis,
+                    selectableDates = object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean =
+                            utcTimeMillis <= System.currentTimeMillis()
+                        override fun isSelectableYear(year: Int): Boolean =
+                            year <= LocalDate.now().year
+                    }
+                )
+                val swishDatePickerColors = DatePickerDefaults.colors(
+                    containerColor = Surface2
+                )
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    colors = swishDatePickerColors,
+                    confirmButton = {
+                        TextButton(onClick = {
+                            datePickerState.selectedDateMillis?.let { millis ->
+                                val picked = Instant.ofEpochMilli(millis)
+                                    .atZone(ZoneOffset.UTC)
+                                    .toLocalDate()
+                                viewModel.updateDate(picked.toString())
+                            }
+                            showDatePicker = false
+                        }) { Text("OK", color = Orange) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("Cancel", color = TextMuted)
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState, colors = swishDatePickerColors)
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
             // --- Shooting ---
             SectionTitle("Shooting")
             Spacer(Modifier.height(12.dp))
@@ -199,6 +256,31 @@ private fun NumberField(label: String, value: String, onChange: (String) -> Unit
         colors = fieldColors(),
         shape = RoundedCornerShape(12.dp)
     )
+}
+
+@Composable
+private fun DateField(date: String, onClick: () -> Unit) {
+    Box {
+        OutlinedTextField(
+            value = date,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Workout date", color = TextMuted) },
+            trailingIcon = {
+                Icon(Icons.Filled.DateRange, contentDescription = null, tint = TextMuted)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            colors = fieldColors(),
+            shape = RoundedCornerShape(12.dp)
+        )
+        Box(
+            Modifier
+                .matchParentSize()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onClick)
+        )
+    }
 }
 
 @Composable
