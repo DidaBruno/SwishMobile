@@ -25,6 +25,14 @@ import hr.ferit.brunodidovic.swish.ui.theme.*
 import hr.ferit.brunodidovic.swish.ui.workouts.WorkoutDetailScreen
 import hr.ferit.brunodidovic.swish.ui.workouts.WorkoutsScreen
 import hr.ferit.brunodidovic.swish.ui.workouts.CreateWorkoutScreen
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
 private const val WORKOUT_DETAIL_ROUTE = "workout_detail"
 private const val CREATE_WORKOUT_ROUTE = "create_workout"
@@ -34,6 +42,21 @@ fun MainScreen(
     onLoggedOut: () -> Unit
 ) {
     val navController = rememberNavController()
+
+    // ask for notification permission once on Android 13+
+    val context = LocalContext.current
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* respect the users choice; nothing to do here */ }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     val items = listOf(
         BottomNavItem.Dashboard,

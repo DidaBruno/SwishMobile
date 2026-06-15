@@ -13,6 +13,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+import android.content.Context
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import dagger.hilt.android.qualifiers.ApplicationContext
+import hr.ferit.brunodidovic.swish.workers.AchievementWorker
 
 // editable form rows — these are UI-side models, separate from the Firestore models
 data class HandlingDrillInput(
@@ -51,7 +57,8 @@ sealed class SaveState {
 class CreateWorkoutViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val templateRepository: TemplateRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _form = MutableStateFlow(CreateWorkoutForm())
@@ -282,11 +289,20 @@ class CreateWorkoutViewModel @Inject constructor(
 
             val result = workoutRepository.saveWorkout(workout)
             _saveState.value = if (result.isSuccess) {
+                enqueueAchievementCheck()
                 SaveState.Saved
             } else {
                 SaveState.Error(result.exceptionOrNull()?.message ?: "Failed to save")
             }
         }
+    }
+
+    private fun enqueueAchievementCheck() {
+        WorkManager.getInstance(appContext).enqueueUniqueWork(
+            "achievement_check",
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequestBuilder<AchievementWorker>().build()
+        )
     }
 }
 
