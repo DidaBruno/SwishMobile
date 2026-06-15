@@ -26,6 +26,7 @@ import hr.ferit.brunodidovic.swish.ui.theme.*
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import androidx.activity.compose.BackHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +39,15 @@ fun CreateWorkoutScreen(
     val form by viewModel.form.collectAsStateWithLifecycle()
     val saveState by viewModel.saveState.collectAsStateWithLifecycle()
     val templates by viewModel.templates.collectAsStateWithLifecycle()
+
+    var showLeaveDialog by remember { mutableStateOf(false) }
+
+    val handleBack: () -> Unit = {
+        if (viewModel.hasUnsavedChanges()) showLeaveDialog = true else onBack()
+    }
+
+    BackHandler { handleBack() }
+
     var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(saveState) {
@@ -61,7 +71,7 @@ fun CreateWorkoutScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = handleBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
@@ -235,6 +245,29 @@ fun CreateWorkoutScreen(
             }
 
             Spacer(Modifier.height(40.dp))
+        }
+
+        // popup for leaving edit/create if something changed
+        if (showLeaveDialog) {
+            AlertDialog(
+                onDismissRequest = { showLeaveDialog = false },
+                containerColor = Surface2,
+                title = { Text("Discard workout?", color = TextPrimary) },
+                text = {
+                    Text("You have unsaved changes. Leave without saving?", color = TextMuted)
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showLeaveDialog = false
+                        onBack()
+                    }) { Text("Leave", color = Error) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLeaveDialog = false }) {
+                        Text("Keep editing", color = TextMuted)
+                    }
+                }
+            )
         }
     }
 }

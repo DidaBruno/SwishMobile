@@ -66,6 +66,9 @@ class CreateWorkoutViewModel @Inject constructor(
     private var editingWorkoutId: String? = null
     private var editingCreatedAt: String? = null
 
+    // this is for checking if you need a popup when creating/editing workout
+    private var initialForm: CreateWorkoutForm? = null
+
     init {
         loadTemplates()
     }
@@ -85,7 +88,7 @@ class CreateWorkoutViewModel @Inject constructor(
             workoutRepository.getWorkoutById(workoutId).collect { workout ->
                 if (workout != null) {
                     editingCreatedAt = workout.createdAt
-                    _form.value = CreateWorkoutForm(
+                    val loaded = CreateWorkoutForm(
                         date = workout.date,
                         twos = workout.drills.shooting.twos.toStringOrEmpty(),
                         threes = workout.drills.shooting.threes.toStringOrEmpty(),
@@ -109,6 +112,8 @@ class CreateWorkoutViewModel @Inject constructor(
                             )
                         }
                     )
+                    _form.value = loaded
+                    initialForm = loaded
                 }
             }
         }
@@ -173,6 +178,30 @@ class CreateWorkoutViewModel @Inject constructor(
             updated.removeAt(index)
             _form.value = _form.value.copy(games = updated)
         }
+    }
+
+    fun hasUnsavedChanges(): Boolean {
+        val f = _form.value
+        return if (editingWorkoutId != null) {
+            // edit mode: dirty if the form differs from what we loaded
+            initialForm != null && f != initialForm
+        } else {
+            // create mode: dirty only if real content was entered
+            f.hasContent()
+        }
+    }
+
+    private fun CreateWorkoutForm.hasContent(): Boolean {
+        val hasShooting = listOf(twos, threes, freeThrows, layups, dunks)
+            .any { (it.toIntOrNull() ?: 0) > 0 }
+        val hasHandling = handling.any {
+            it.name.isNotBlank() || (it.count.toIntOrNull() ?: 0) > 0
+        }
+        val hasGames = games.any {
+            it.teamAPlayers.isNotBlank() || it.teamBPlayers.isNotBlank() ||
+                    (it.teamAScore.toIntOrNull() ?: 0) > 0 || (it.teamBScore.toIntOrNull() ?: 0) > 0
+        }
+        return hasShooting || hasHandling || hasGames
     }
 
     // --- save a handling drill as a reusable template ---

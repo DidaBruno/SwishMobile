@@ -139,21 +139,17 @@ private fun ProfileContent(
         )
         tiles.chunked(3).forEach { row ->
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Max),          // row as tall as its tallest tile
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 row.forEach { (label, value) ->
                     StatTile(
                         label = label,
                         value = value,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()             // short tiles stretch to match
+                        modifier = Modifier.weight(1f)
                     )
                 }
-                // pad a short final row so tiles keep 1/3 width (handles 1 OR 2 missing)
+                // pad a short final row so tiles keep 1/3 width
                 repeat(3 - row.size) {
                     Spacer(Modifier.weight(1f))
                 }
@@ -212,7 +208,9 @@ private fun StatTile(label: String, value: Int, modifier: Modifier = Modifier) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = TextMuted
+            color = TextMuted,
+            minLines = 2,
+            maxLines = 2
         )
     }
 }
