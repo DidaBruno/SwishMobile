@@ -26,10 +26,6 @@ class SwishApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         scheduleDailyReminder()
-        // TEMP — remove after testing
-        WorkManager.getInstance(this).enqueue(
-            androidx.work.OneTimeWorkRequestBuilder<DailyReminderWorker>().build()
-        )
     }
 
     private fun scheduleDailyReminder() {

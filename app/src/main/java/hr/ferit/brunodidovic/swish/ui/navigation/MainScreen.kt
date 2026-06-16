@@ -33,6 +33,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import hr.ferit.brunodidovic.swish.domain.ShootingSuggestion
 
 private const val WORKOUT_DETAIL_ROUTE = "workout_detail"
 private const val CREATE_WORKOUT_ROUTE = "create_workout"
@@ -117,6 +118,12 @@ fun MainScreen(
                 DashboardScreen(
                     onCreateWorkout = {
                         navController.navigate(CREATE_WORKOUT_ROUTE)
+                    },
+                    onSuggestionContinue = { s ->
+                        navController.navigate(
+                            "$CREATE_WORKOUT_ROUTE?twos=${s.twos}&threes=${s.threes}" +
+                                    "&freeThrows=${s.freeThrows}&layups=${s.layups}&dunks=${s.dunks}"
+                        )
                     }
                 )
             }
@@ -144,18 +151,36 @@ fun MainScreen(
                 )
             }
             composable(
-                route = "$CREATE_WORKOUT_ROUTE?workoutId={workoutId}",
+                route = "$CREATE_WORKOUT_ROUTE?workoutId={workoutId}" +
+                        "&twos={twos}&threes={threes}&freeThrows={freeThrows}" +
+                        "&layups={layups}&dunks={dunks}",
                 arguments = listOf(
                     navArgument("workoutId") {
                         type = NavType.StringType
                         nullable = true
                         defaultValue = null
-                    }
+                    },
+                    navArgument("twos") { type = NavType.IntType; defaultValue = 0 },
+                    navArgument("threes") { type = NavType.IntType; defaultValue = 0 },
+                    navArgument("freeThrows") { type = NavType.IntType; defaultValue = 0 },
+                    navArgument("layups") { type = NavType.IntType; defaultValue = 0 },
+                    navArgument("dunks") { type = NavType.IntType; defaultValue = 0 }
                 )
             ) { backStackEntry ->
-                val workoutId = backStackEntry.arguments?.getString("workoutId")
+                val args = backStackEntry.arguments
+                val workoutId = args?.getString("workoutId")
+                val twos = args?.getInt("twos") ?: 0
+                val threes = args?.getInt("threes") ?: 0
+                val freeThrows = args?.getInt("freeThrows") ?: 0
+                val layups = args?.getInt("layups") ?: 0
+                val dunks = args?.getInt("dunks") ?: 0
+                val prefill = if (twos + threes + freeThrows + layups + dunks > 0) {
+                    ShootingSuggestion(twos, threes, freeThrows, layups, dunks)
+                } else null
+
                 CreateWorkoutScreen(
                     workoutId = workoutId,
+                    prefill = prefill,
                     onBack = { navController.popBackStack() },
                     onSaved = { navController.popBackStack() }
                 )

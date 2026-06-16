@@ -170,8 +170,8 @@ private fun WorkoutDetailContent(workout: Workout) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ShootingStat("2PT", workout.drills.shooting.twos, Modifier.weight(1f))
-            ShootingStat("3PT", workout.drills.shooting.threes, Modifier.weight(1f))
+            ShootingStat("Twos", workout.drills.shooting.twos, Modifier.weight(1f))
+            ShootingStat("Threes", workout.drills.shooting.threes, Modifier.weight(1f))
             ShootingStat("FT", workout.drills.shooting.freeThrows, Modifier.weight(1f))
             ShootingStat("Layups", workout.drills.shooting.layups, Modifier.weight(1f))
             ShootingStat("Dunks", workout.drills.shooting.dunks, Modifier.weight(1f))

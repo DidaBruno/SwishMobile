@@ -27,11 +27,13 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import androidx.activity.compose.BackHandler
+import hr.ferit.brunodidovic.swish.domain.ShootingSuggestion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateWorkoutScreen(
     workoutId: String? = null,
+    prefill: ShootingSuggestion? = null,
     onBack: () -> Unit,
     onSaved: () -> Unit,
     viewModel: CreateWorkoutViewModel = hiltViewModel()
@@ -56,6 +58,8 @@ fun CreateWorkoutScreen(
     LaunchedEffect(workoutId) {
         if (workoutId != null) {
             viewModel.loadWorkoutForEditing(workoutId)
+        } else if (prefill != null) {
+            viewModel.prefillShooting(prefill)
         }
     }
 

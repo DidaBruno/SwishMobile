@@ -20,13 +20,26 @@ import hr.ferit.brunodidovic.swish.model.Workout
 import hr.ferit.brunodidovic.swish.ui.theme.*
 import hr.ferit.brunodidovic.swish.viewmodel.DashboardUiState
 import hr.ferit.brunodidovic.swish.viewmodel.DashboardViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Casino
+import hr.ferit.brunodidovic.swish.domain.ShootingSuggestion
+import hr.ferit.brunodidovic.swish.domain.WorkoutSuggester
+import hr.ferit.brunodidovic.swish.util.ShakeDetector
 
 @Composable
 fun DashboardScreen(
     onCreateWorkout: () -> Unit,
+    onSuggestionContinue: (ShootingSuggestion) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showSuggestion by remember { mutableStateOf(false) }
+    var suggestion by remember { mutableStateOf<ShootingSuggestion?>(null) }
+
+    // sensor is live ONLY while the dialog is open, a real shake is the only way to roll
+    ShakeDetector(enabled = showSuggestion) {
+        suggestion = WorkoutSuggester.random()
+    }
 
     Box(
         modifier = Modifier
@@ -83,6 +96,36 @@ fun DashboardScreen(
                 }
             }
         }
+        FloatingActionButton(
+            onClick = {
+                suggestion = null //force a shake to populate
+                showSuggestion = true
+            },
+            containerColor = Orange,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Casino,
+                contentDescription = "Random workout",
+                tint = TextPrimary
+            )
+        }
+    }
+    if (showSuggestion) {
+        SuggestionDialog(
+            suggestion = suggestion,
+            onContinue = { s ->
+                onSuggestionContinue(s)
+                showSuggestion = false
+                suggestion = null
+            },
+            onDismiss = {
+                showSuggestion = false
+                suggestion = null
+            }
+        )
     }
 }
 
@@ -315,5 +358,82 @@ private fun formatDate(dateString: String): String {
         date.format(formatter)
     } catch (e: Exception) {
         dateString
+    }
+}
+
+@Composable
+private fun SuggestionDialog(
+    suggestion: ShootingSuggestion?,
+    onContinue: (ShootingSuggestion) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Surface2,
+        title = { Text("Suggested shootaround", color = TextPrimary) },
+        text = {
+            if (suggestion == null) {
+                Text(
+                    "Shake your phone to generate a workout.",
+                    color = TextMuted,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                Column {
+                    Spacer(Modifier.height(12.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        SuggestionStat("Twos", suggestion.twos, Modifier.weight(1f))
+                        SuggestionStat("Threes", suggestion.threes, Modifier.weight(1f))
+                        SuggestionStat("FT", suggestion.freeThrows, Modifier.weight(1f))
+                        SuggestionStat("Layups", suggestion.layups, Modifier.weight(1f))
+                        SuggestionStat("Dunks", suggestion.dunks, Modifier.weight(1f))
+                    }
+                    SectionDivider()
+                    Text(
+                        text = "${suggestion.total} shots total",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextMuted
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Shake again for new numbers.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextDim
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (suggestion != null) {
+                TextButton(onClick = { onContinue(suggestion) }) {
+                    Text("CONTINUE", color = Orange)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextMuted)
+            }
+        }
+    )
+}
+@Composable
+private fun SuggestionStat(label: String, value: Int, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "$value",
+            style = MaterialTheme.typography.titleLarge,
+            color = Orange
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = TextMuted,
+            textAlign = TextAlign.Center
+        )
     }
 }

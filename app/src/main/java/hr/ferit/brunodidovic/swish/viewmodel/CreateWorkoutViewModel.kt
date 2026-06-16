@@ -19,6 +19,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import hr.ferit.brunodidovic.swish.workers.AchievementWorker
+import hr.ferit.brunodidovic.swish.domain.ShootingSuggestion
 
 // editable form rows — these are UI-side models, separate from the Firestore models
 data class HandlingDrillInput(
@@ -133,6 +134,17 @@ class CreateWorkoutViewModel @Inject constructor(
     fun updateFreeThrows(v: String) { _form.value = _form.value.copy(freeThrows = v.filterDigits()) }
     fun updateLayups(v: String) { _form.value = _form.value.copy(layups = v.filterDigits()) }
     fun updateDunks(v: String) { _form.value = _form.value.copy(dunks = v.filterDigits()) }
+
+    // --- prefill from randomizer ---
+    fun prefillShooting(s: ShootingSuggestion) {
+        _form.value = _form.value.copy(
+            twos = s.twos.toString(),
+            threes = s.threes.toString(),
+            freeThrows = s.freeThrows.toString(),
+            layups = s.layups.toString(),
+            dunks = s.dunks.toString()
+        )
+    }
 
     // --- handling drills ---
     fun addHandlingDrill() {
